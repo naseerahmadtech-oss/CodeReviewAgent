@@ -47,7 +47,7 @@ namespace CodeReviewAgent
             var httpClient = new HttpClient
             {
                 BaseAddress = new Uri("http://localhost:11434"),
-                Timeout = TimeSpan.FromMinutes(10)
+                Timeout = TimeSpan.FromMinutes(30)
             };
 
             IChatClient client = new ChatClientBuilder(
