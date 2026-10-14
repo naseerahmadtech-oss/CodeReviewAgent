@@ -7,47 +7,10 @@ namespace CodeReviewAgent
     {
         static async Task Main(string[] args)
         {
-            //// 1. Set up OllamaApiClient
-            //var httpClient = new HttpClient
-            //{
-            //    BaseAddress = new Uri("http://localhost:11434"),
-            //    Timeout = TimeSpan.FromMinutes(10)
-            //};
-
-            //// 2. Wrap the base client with automatic function invocation
-            //IChatClient client = new ChatClientBuilder(
-            //        new OllamaApiClient(httpClient, "qwen3:4b"))
-            //    .UseFunctionInvocation()
-            //    .Build();
-
-            //// 3. Define your tool (the C# method)
-            //AIFunction timeFunction = AIFunctionFactory.Create(
-            //    TimeTools.GetCurrentTime,
-            //    name: "get_current_time",
-            //    description: "Gets the current date and time."
-            //);
-
-            //// 4. Add the tool to ChatOptions
-            //ChatOptions options = new()
-            //{
-            //    Tools = [timeFunction],
-            //    Instructions = "You are a helpful assistant. Use the get_current_time tool to tell the current time."
-            //};
-
-            //Console.WriteLine("Ask a question (e.g., 'What time is it?'):");
-            //string? userInput = Console.ReadLine();
-
-            //if (!string.IsNullOrWhiteSpace(userInput))
-            //{
-            //    // 5. Just call GetResponseAsync - the middleware handles the tool loop!
-            //    var response = await client.GetResponseAsync(userInput, options);
-            //    Console.WriteLine($"\nAI: {response.Text}");
-            //}
-
             var httpClient = new HttpClient
             {
                 BaseAddress = new Uri("http://localhost:11434"),
-                Timeout = TimeSpan.FromMinutes(10)
+                Timeout = TimeSpan.FromMinutes(50)
             };
 
             IChatClient client = new ChatClientBuilder(
@@ -55,23 +18,57 @@ namespace CodeReviewAgent
                 .UseFunctionInvocation()
                 .Build();
 
-            // Register both tools
+            // Register tools
             AIFunction timeFunction = AIFunctionFactory.Create(TimeTools.GetCurrentTime);
             AIFunction prFunction = AIFunctionFactory.Create(GitHubTools.GetPrDiff);
+            AIFunction postReviewFunction = AIFunctionFactory.Create(GitHubTools.PostReviewComment);
 
             ChatOptions options = new()
             {
-                Tools = [timeFunction, prFunction],
-                Instructions = "You are a helpful assistant. Use get_current_time for time questions. Use get_pr_diff when the user provides a GitHub PR URL and wants to know about its changes."
+                Tools = [timeFunction, prFunction, postReviewFunction],
+                Instructions = """
+                      You are a senior C# code reviewer.
+                     
+                      WORKFLOW:
+                      1. When the user provides a PR URL, call `get_pr_diff` first.
+                      2. Analyze the diff and present your review in markdown.
+                      3. Ask the user: "Would you like me to post this review to the PR? (yes/no)"
+                      4. ONLY if the user explicitly says "yes", call `post_review_comment` with the review text.
+                     
+                      NEVER call `post_review_comment` without explicit user confirmation.
+                      Use event type "COMMENT" unless the user specifies otherwise.
+                      """,
+                Temperature = 0.2f
             };
 
-            Console.WriteLine("Ask a question (e.g., 'What time is it?' or paste a PR URL):");
-            string? userInput = Console.ReadLine();
+            // ─── 5. Interactive loop ───
+            Console.WriteLine("╔══════════════════════════════════════════════╗");
+            Console.WriteLine("║        Code Review Agent (.NET 10)           ║");
+            Console.WriteLine("║  Ask about time, or paste a GitHub PR URL    ║");
+            Console.WriteLine("║  Type 'exit' to quit                         ║");
+            Console.WriteLine("╚══════════════════════════════════════════════╝");
 
-            if (!string.IsNullOrWhiteSpace(userInput))
+            while (true)
             {
-                var response = await client.GetResponseAsync(userInput, options);
-                Console.WriteLine($"\nAI: {response.Text}");
+                string? userInput = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(userInput)) continue;
+                if (userInput.Equals("exit", StringComparison.OrdinalIgnoreCase)) break;
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(userInput))
+                    {
+                        var response = await client.GetResponseAsync(userInput, options);
+                        Console.WriteLine($"\nAI: {response.Text}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"\n[Error] {ex.Message}");
+                    Console.ResetColor();
+                }
             }
         }
     }
