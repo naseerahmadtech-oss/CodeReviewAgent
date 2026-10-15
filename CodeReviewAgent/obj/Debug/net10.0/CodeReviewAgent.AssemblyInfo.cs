@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CodeReviewAgent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb6cf1b35eb2f826d010342dd33b24763d410ea0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6497ea65cc584fa900ad632c878f61981dc50025")]
 [assembly: System.Reflection.AssemblyProductAttribute("CodeReviewAgent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CodeReviewAgent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
