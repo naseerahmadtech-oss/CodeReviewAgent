@@ -18,7 +18,7 @@ namespace CodeReviewAgent
                 .UseFunctionInvocation()
                 .Build();
 
-            // Register tools
+            // Registration tools
             AIFunction timeFunction = AIFunctionFactory.Create(TimeTools.GetCurrentTime);
             AIFunction prFunction = AIFunctionFactory.Create(GitHubTools.GetPrDiff);
             AIFunction postReviewFunction = AIFunctionFactory.Create(GitHubTools.PostReviewComment);
@@ -30,10 +30,11 @@ namespace CodeReviewAgent
                       You are a senior C# code reviewer.
                      
                       WORKFLOW:
-                      1. When the user provides a PR URL, call `get_pr_diff` first.
-                      2. Analyze the diff and present your review in markdown.
-                      3. Ask the user: "Would you like me to post this review to the PR? (yes/no)"
-                      4. ONLY if the user explicitly says "yes", call `post_review_comment` with the review text.
+                      1. If the user hasn't provided a PR URL yet, ask for it FIRST.
+                      2. Once you have the URL, call get_pr_diff.
+                      3. Present the review in markdown.
+                      4. Ask: "Would you like me to post this review? (yes/no)"
+                      5. ONLY after explicit "yes", call post_review_comment.
                      
                       NEVER call `post_review_comment` without explicit user confirmation.
                       Use event type "COMMENT" unless the user specifies otherwise.
