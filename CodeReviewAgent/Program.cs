@@ -18,7 +18,7 @@ namespace CodeReviewAgent
                 .UseFunctionInvocation()
                 .Build();
 
-            // Register tools
+            // Registration tools
             AIFunction timeFunction = AIFunctionFactory.Create(TimeTools.GetCurrentTime);
             AIFunction prFunction = AIFunctionFactory.Create(GitHubTools.GetPrDiff);
             AIFunction postReviewFunction = AIFunctionFactory.Create(GitHubTools.PostReviewComment);
